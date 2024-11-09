@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Socket.IO Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .chat-container {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 20px;
+        }
+        
+        .message-area {
+            margin-bottom: 20px;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 10px;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #message-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        #google-signin-button {
+            padding: 10px 20px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #google-signin-button:hover {
+            background-color: #357ae8;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <button id="google-signin-button">Sign in with Google</button>
+    </div>
+    <div class="chat-container">
+        <div class="message-area" id="messages"></div>
+        <div class="input-container">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js"></script>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUak_CiEoa_nR3M8cdLUtBCFYghJAlrEU",
+            authDomain: "quest-th.firebaseapp.com",
+            projectId: "quest-th",
+            storageBucket: "quest-th.appspot.com",
+            messagingSenderId: "371781335465",
+            appId: "1:371781335465:web:dc02d3030dbf3a2ee2ecb8"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // Example usage: Get ID Token and log it
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User is already signed in:', user);
+                getIdToken().then((idToken) => {
+                    console.log('ID Token:', idToken);
+                    const socket = io('http://localhost:3000', {
+                        auth: {
+                            token: idToken
+                        }
+                    });
+
+                    // Handle connection events
+                    socket.on('connect', () => {
+                        addMessage('Connected to server');
+                    });
+
+                    socket.on('disconnect', () => {
+                        addMessage('Disconnected from server');
+                    });
+                    socket.on("connect_error", (err) => {
+                        console.log(err);
+                    });
+
+                    // Handle receiving messages
+                    socket.on('message', (msg) => {
+                        addMessage(msg);
+                    });
+
+                }).catch((error) => {
+                    console.error('Error getting ID Token:', error);
+                });
+            } else {
+                console.log('No user is signed in.');
+            }
+        });
+
+        // Function to send messages
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (message) {
+
+                if(message === "scan"){
+                    socket.emit('app:scan', message, (response) => {
+                        addMessage(`Server: ${response.message}`);
+                        console.log(response);
+                    });
+                    return;
+                }
+                // Emit the message to the server
+                socket.emit('message', message);
+                
+                // Clear input field
+                input.value = '';
+                
+                // Add message to the message area
+                addMessage(`You: ${message}`);
+            }
+        }
+
+        // Function to add messages to the message area
+        function addMessage(message) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            
+            // Auto scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Handle Enter key press
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        document.getElementById('google-signin-button').addEventListener('click', () => {
+                firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then((result) => {
+                    console.log('User signed in:', result.user);
+                }).catch((error) => {
+                    console.error('Error during sign-in:', error);
+                });
+            });
+    </script>
+</body>
+</html>
