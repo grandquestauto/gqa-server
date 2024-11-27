@@ -3,8 +3,13 @@
   "scripts": {
     "dev": "nodemon",
     "build": "next build && tsc --project tsconfig.server.json",
-    "start": "cross-env NODE_ENV=production node dist/server.js"
+    "start": "cross-env NODE_ENV=production node dist/server.js",
+    "build:worker": "cloudflare && tsc --project tsconfig.server.json",
+    "dev:worker": "wrangler dev --port 8771",
+    "preview:worker": "npm run build:worker && npm run dev:worker",
+    "deploy:worker": "npm run build:worker && wrangler deploy"
   },
+
   "dependencies": {
     "@firebase/app": "^0.10.15",
     "@firebase/auth": "^1.8.0",
@@ -20,6 +25,7 @@
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^0.2.1",
     "@types/node": "^18.11.5",
     "@types/react": "^18.0.23",
     "@types/react-dom": "^18.0.7",
