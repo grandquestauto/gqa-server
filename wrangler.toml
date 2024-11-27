@@ -1,5 +1,2 @@
 main = ".worker-next/server.js"
 name = "gqa"
-compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat"]
-experimental_assets = { directory = ".worker-next/assets", binding = "ASSETS" }
