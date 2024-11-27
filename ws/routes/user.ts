@@ -41,8 +41,7 @@ export default (io: Server, socket: Socket) => {
     });
   }
 
-  const getUser = (args: string[], callback) => {
-    console.log(args);
+  const getUser = (callback) => {
       callback(socket.handshake.auth.user);
   }
 

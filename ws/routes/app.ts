@@ -3,6 +3,7 @@ import type { Server, Socket } from "socket.io";
 import { decodeToken } from "../../lib/util";
 import process from "node:process";
 import { QP, Team, User } from "../../lib/models";
+import team from "./team";
 
 export default (_io: Server, socket: Socket) => {
   const scan = async (token: string, callback) => {
@@ -29,14 +30,16 @@ export default (_io: Server, socket: Socket) => {
 
             await team.save();
         } catch(err) {
-            // Check if the team already exists
+          // Check if team already exists
             console.log(err);
-            callback({ status: 500, message: "Error creating team" });
+            if(err.code == 11000) { callback({ status: 409, msg: "Team already exists" }); return; }
+            callback({ status: 500, msg: "Error creating team" });
             return;
         } 
 
           user.c_team = cmd.data;
           user.c_quest = "gqa";
+          user.boss = true;
           user.save();
 
           callback({
@@ -60,6 +63,8 @@ export default (_io: Server, socket: Socket) => {
           
           team.members.push({uid: user.uid, name: user.name, dp: user.dp});
           await team.save();
+
+          socket.emit(`${team.id}:update`, { status: 200, type:"newMember", data: team });
         }catch(err) {
           console.log(err);
           callback({ status: 500, message: "Error joining team" });

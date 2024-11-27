@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import mission from '../ws/routes/mission';
+import { unique } from 'next/dist/build/utils';
 const { Schema, model } = mongoose;
 
 
@@ -26,6 +27,7 @@ const userSchema = new Schema({
     c_quest: String,
     c_team: String,
     fcmToken: String,
+    boss: Boolean
 });
 
 userSchema.index({ uid: 1 }, { unique: true });
@@ -91,18 +93,25 @@ const missionLogSchema = new Schema({
     },
     hints: [String]
 });
-missionLogSchema.index({ missionId: 1 }, { unique: true });
 
 
 const teamSchema = new Schema({
     id: String,
-    name: String,
+    name: {
+        type: String,
+        default: ''
+    },
     lead: String,
     questPoints: Number,
     currentMission: String,
     videoLink: String,
 
-    missionLog: [missionLogSchema],
+    missionLog: {
+        type: [missionLogSchema],
+        default: [],
+        unique: false,
+        required: false
+    },
     members: [playerSchema]
 });
 
@@ -138,8 +147,6 @@ const questSchema = new Schema({
     },
 
     qToken: String,
-    missions: [Schema.Types.Mixed],
-    teams: [Schema.Types.Mixed],
 });
 
 questSchema.index({ id: 1 }, { unique: true });

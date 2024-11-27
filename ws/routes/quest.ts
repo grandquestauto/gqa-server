@@ -4,7 +4,7 @@ import { Quest, User } from "../../lib/models";
 
 export default (server: Server, socket: Socket) => {
 
-  const getQuest = (args: string[], callback) => {
+  const getQuest = (callback) => {
 
     const qid = (socket.handshake.auth.user as User).c_quest
 

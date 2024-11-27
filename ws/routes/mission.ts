@@ -2,11 +2,12 @@
 import type { Server, Socket } from "socket.io";
 
 export default (_io: Server, socket: Socket) => {
-  const getMission = (orderId, callback) => {
+  const getMission = (callback) => {
+    callback({status: 200, message: "Mission found."});
     // ...
   }
 
-  const startMission = (orderId, callback) => {
+  const startMission = (callback) => {
     // ...
   }
 
