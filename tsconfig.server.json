@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "outDir": "dist",
+    "outDir": ".worker-next",
     "lib": ["es2019"],
     "target": "es2019",
     "isolatedModules": false,
