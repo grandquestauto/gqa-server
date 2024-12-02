@@ -71,13 +71,17 @@ const Chat = () => {
 
     const sendMessage = () => {
         if (!socket) return;
-            if(topic.trim() == "") setTopic("message");
-            socket.emit(topic, message.trim(), (response) => {
-                console.log('Response:', response);
-                addMessage(`Server@${topic}: ` + JSON.stringify(response));
-            });
-            addMessage(`You@${topic}: ` + message);
-            setMessage('');
+        let f: Promise<void> ;
+        if(topic.trim() == "") setTopic("message");
+        if(message.trim() == "") f = socket.emitWithAck(topic)
+        else f = socket.emitWithAck(topic, message.trim())
+
+        f.then((response) => {
+            console.log('Response:', response);
+            addMessage(`Server@${topic}: ` + JSON.stringify(response));
+        });
+        addMessage(`You@${topic}: ` + message);
+        setMessage('');
     };
 
     const handleSignIn = () => {
@@ -92,9 +96,13 @@ const Chat = () => {
         <div>
             <button id="google-signin-button" onClick={handleSignIn}>Sign in with Google</button>
             <div className="chat-container">
-                <div className="message-area" id="messages">
+                <div ref={(el) => {
+                    if (el) {
+                        el.scrollTop = el.scrollHeight;
+                    }
+                }} className="message-area" id="messages">
                     {messages.map((msg, index) => (
-                        <div key={index} className="message">{msg}</div>
+                        <div key={index} className={`message ${msg.startsWith("Server") ? "!bg-green-200": "" }`}>{msg}</div>
                     ))}
                 </div>
                 <div className="input-container">

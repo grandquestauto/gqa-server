@@ -13,6 +13,7 @@ export default (server: Server, socket: Socket) => {
 
     Team.findOne({id: tid}).then((team) => {
       if(team) {
+        socket.handshake.auth.user.currentMission = team.currentMission;
         return callback({ status: 200, message: "Yes.", data: team });
       } else {
         return callback({ status: 404, message: "Team not found." });
@@ -38,14 +39,6 @@ export default (server: Server, socket: Socket) => {
     if(!process.env.ENC_SECRET) return callback({ status: 500, message: "Internal Error." }); 
 
     callback({ status: 200, message: "Yes.", token: encodeToken({ qid: user.c_quest, type: "joinTeam", data: user.c_team }, process.env.ENC_SECRET) });
-  }
-
-  const createTeam = (args: string[], callback) => {
-
-    if(socket.handshake.auth.user.c_team != "") {
-      return callback({ status: 409, message: "User already joined a team." });
-    }
-    
   }
 
 

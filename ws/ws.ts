@@ -5,7 +5,7 @@ import quest from "./routes/quest";
 import team from "./routes/team";
 import {getAuth} from "firebase-admin/auth"
 import { getAdmin } from "../lib/fb";
-import { User } from "../lib/models";
+import { Team, User } from "../lib/models";
 import user from "./routes/user";
 import "dotenv/config";
 
@@ -36,8 +36,22 @@ export default function ws(server: Server) {
 
       User.findOne({uid: uid}).then((user) => {
         if(user) {
+          // Improper practise to add user to handshake.auth
           socket.handshake.auth.user = user;
-          next();
+
+          if(user.c_team == "") return next();
+          Team.findOne({id: user.c_team}).then((team) => {
+            if(team) {
+              if(!team.members.find((member) => member.uid == uid)) return next(new Error("403"));
+              
+              // Improper practise to add team to handshake.auth
+              socket.handshake.auth.user.currentMission = team.currentMission;
+              socket.join(team.id);
+              next();
+            }else {
+              next(new Error("404"));
+            }
+          });
         } else {
           User.create({
             uid: uid, 

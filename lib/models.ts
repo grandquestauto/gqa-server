@@ -4,20 +4,6 @@ import { unique } from 'next/dist/build/utils';
 const { Schema, model } = mongoose;
 
 
-export type User =  {
-    phno: string
-    uid: string
-    name: string
-    email: string
-    dp: string
-    c_quest: string
-    c_team: string
-    token?: string
-    fcmToken?: string
-    boss?: boolean
-}
-
-
 const userSchema = new Schema({
     phno: String,
     uid: String,
@@ -27,11 +13,35 @@ const userSchema = new Schema({
     c_quest: String,
     c_team: String,
     fcmToken: String,
+    host: {
+        type: String,
+        required: false
+    },
     boss: Boolean
 });
 
 userSchema.index({ uid: 1 }, { unique: true });
 export const User = model('User', userSchema);
+
+
+const levelSchema = new Schema({
+    id: String,
+    type: {
+        type: String,
+        enum: ['text', 'video', 'audio', 'image', 'location', 'end'],
+        default: 'text'
+    },
+    input: {
+        type: String,
+        enum: ['none', 'text', 'qr'],
+        default: 'none'
+    },
+    value: String,
+    context: String,
+    title: String,
+    hint: String,
+    next: String
+});
 
 const missionSchema = new Schema({
     id: {
@@ -44,20 +54,29 @@ const missionSchema = new Schema({
         requied: true
     },
     showInQuest: Boolean,
-    availablePoints: Number,
+    availablePoints: {
+        type: Number,
+        default: 0,
+        required: true
+    },
     timeout: Number,
     maxTeamAllowable: {
         type: Number,
         default: 1
     },
-    crnt: {
-        team: String,
-        level: String,
-        startTime: Date
-    },
-    level: Schema.Types.Mixed
+    levels: {
+        type: [levelSchema],
+        default: []
+    }
 });
 missionSchema.index({ id: 1 }, { unique: true });
+
+missionSchema.methods.toJSON = function () {
+    const mission = this.toObject();
+    delete mission.levels;
+    mission.level = null;
+    return mission;
+}
 
 export const Mission = model('Mission', missionSchema);
 
@@ -73,8 +92,15 @@ const playerSchema = new Schema({
 });
 playerSchema.index({ uid: 1 }, { unique: true });
 
+
+const hintSchema = {
+    mid: String,
+    level: String,
+    claimed: Boolean
+}
 const missionLogSchema = new Schema({
-    missionId: String,
+    mid: String,
+    tid: String,
     startTime: Date,
     endTime: Date,
     level: String,
@@ -84,16 +110,21 @@ const missionLogSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['completed', 'timeout', 'exited', 'init'],
+        enum: ['completed', 'timeout', 'exited', 'init', 'started'],
         default: 'init'
     },
     points: {
         type: Number,
         default: 0
     },
-    hints: [String]
+    hints: {
+        type: [hintSchema],
+        default: []
+    }
 });
 
+// missionLogSchema.index({ teamId: 1, missionId: 1 }, { unique: true });
+export const MissionLog = model('MissionLog', missionLogSchema);
 
 const teamSchema = new Schema({
     id: String,
@@ -102,16 +133,13 @@ const teamSchema = new Schema({
         default: ''
     },
     lead: String,
-    questPoints: Number,
+    questPoints: {
+        required: true,
+        type: Number,
+        default: 0
+    },
     currentMission: String,
     videoLink: String,
-
-    missionLog: {
-        type: [missionLogSchema],
-        default: [],
-        unique: false,
-        required: false
-    },
     members: [playerSchema]
 });
 
@@ -189,61 +217,4 @@ export interface QuestPoints {
     value: number;
     type: 'quest' | 'bonus';
     tm?: string | number
-}
-/*
-    Data Type for `QuestTask`
-*/
-export type Mission = {
-    id: string
-    missionTitle: string
-    showInQuest: boolean
-
-    availablePoints: number
-    timeout: number
-    maxTeamAllowable?: number
-
-    crnt?: {
-        team?: string
-        level?: string
-        startTime?: Date;
-    }
-    level?: Level | null
-}
-
-export type Level = {
-    id: string
-    type: "text" | "video" | "audio" | "image" | "location" | "end"
-    input?: "none" | "text"
-    usedHint?: boolean
-    value?: string
-
-    context?: string
-    title?: string
-    hint?: string
-    next?: string
-}
-
-/*
-    Data Type for `Team`
-*/
-export type Team = {
-    id: string
-    name?: string
-    lead: string
-    msId?: string
-    members?: [Player]
-
-    questPoints: number
-    currentMission?: string
-    videoLink?: string
-    missionLog?: {
-        [mid: string]: {
-            toMillis(): unknown;
-            endTime: Date
-            level: string
-            startTime: Date
-            status: "completed" | "timeout" | "exited" | "init"
-            points?: number
-        }
-    }
 }
