@@ -11,8 +11,10 @@ export default (_io: Server, socket: Socket) => {
   const getMission = async (callback) => {
     const tid = socket.handshake.auth.user.c_team;
 
-    if(!socket.handshake.auth.user.currentMission) return callback({status: 401, message: "No mission assigned."});
-    const [mid, lvlId] =  socket.handshake.auth.user.currentMission.split(".");
+    const team = await Team.findOne({id: tid});
+    if(!team) return callback({status: 404, message: "Team not found."});
+
+    const [mid, lvlId] =  team.currentMission.split(".");
 
     if(mid == "none") return callback({status: 401, message: "No mission assigned."});
     if(lvlId == "end") return callback({status: 401, message: "Mission finished."});

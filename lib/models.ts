@@ -138,7 +138,10 @@ const teamSchema = new Schema({
         type: Number,
         default: 0
     },
-    currentMission: String,
+    currentMission: {
+        type: String,
+        default: 'none'
+    },
     videoLink: String,
     members: [playerSchema]
 });
