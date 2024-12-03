@@ -31,7 +31,7 @@ export default (server: Server, socket: Socket) => {
   }
 
   const addMembers = (callback) => {
-    const user = socket.handshake.auth.user as User;
+    const user = socket.handshake.auth.user;
 
     if(!user.boss) return callback({ status: 403, message: "You are not the team lead." });
     if(user.c_team == "") return callback({ status: 404, message: "User not in a team." });
@@ -43,7 +43,7 @@ export default (server: Server, socket: Socket) => {
 
 
   const updateTeam = ({name}, callback) => {
-    const user = socket.handshake.auth.user as User;
+    const user = socket.handshake.auth.user;
 
     if(!user.boss) return callback({ status: 403, message: "You are not the team lead." });
     if(user.c_team == "") return callback({ status: 404, message: "User not in a team." });

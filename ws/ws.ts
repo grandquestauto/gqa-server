@@ -3,6 +3,7 @@ import app from "./routes/app";
 import mission from "./routes/mission";
 import quest from "./routes/quest";
 import team from "./routes/team";
+import host from "./routes/host";
 import {getAuth} from "firebase-admin/auth"
 import { getAdmin } from "../lib/fb";
 import { Team, User } from "../lib/models";
@@ -22,6 +23,8 @@ export default function ws(server: Server) {
     quest(server, socket);
     team(server, socket);
     user(server, socket);
+    
+    host(server, socket);
   });
 
   server.on('disconnect', (socket) => {

@@ -51,8 +51,8 @@ const Chat = () => {
                         addMessage(msg);
                     });
 
-                    newSocket.on('announcement', (msg) => {
-                        addMessage(`Announcement: ${msg}`);
+                    newSocket.on('quest:announcement', (msg) => {
+                        addMessage(`Announcement: ${msg.message}`);
                     });
 
                     setSocket(newSocket);

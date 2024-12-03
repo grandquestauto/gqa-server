@@ -6,7 +6,7 @@ export default (server: Server, socket: Socket) => {
 
   const getQuest = (callback) => {
 
-    const qid = (socket.handshake.auth.user as User).c_quest
+    const qid = socket.handshake.auth.user.c_quest
 
     if(qid == "") {
       callback({status: 400, message: "User not in any quest."});
@@ -41,7 +41,7 @@ export default (server: Server, socket: Socket) => {
       id: qid,
       name: "GrandQuestAuto",
       desc: "A GTA themed techno Treasure Hunt.",
-      host: (socket.handshake.auth.user as User).uid,
+      host: socket.handshake.auth.user.uid,
       teams: [],
       missions: [],
       qToken: "",
@@ -61,6 +61,5 @@ export default (server: Server, socket: Socket) => {
 
   socket.on("quest:create", createQuest);
   socket.on("quest:get", getQuest);
-  socket.on("quest:announcement", getAnnouncements);
   socket.on("quest:exit", exitQuest);
 }
